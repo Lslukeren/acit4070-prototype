@@ -17,11 +17,17 @@ def getDeparture():
     global payCount
     global payConfirm
     global payConfirm2
+    global priceShow
+    global doubleCheck
     a = str(departure.get())
     b = str(destination.get())
     c = locationFinder.findDistance(a, b)
 
     #Removes error labeles before each call to ensure the removal of bugs
+    try:
+        priceShow.grid_forget()
+    except NameError:
+        pass
     try:
         errorText.grid_forget()
         errorText2.grid_forget()
@@ -42,22 +48,60 @@ def getDeparture():
 
     if c and numberOfSeats > 0:
         if payCount == 0:
-            price = c*2 + numberOfSeats*5
+            doubleCheck = numberOfSeats
+            price = c*2 + doubleCheck*5
             payCount = 1
+            try:
+                payConfirm.grid_forget()
+            except NameError:
+                pass
+            try:
+                priceShow.grid_forget()
+            except NameError:
+                pass
             try:
                 payConfirm2.grid_forget()
             except NameError:
                 pass
             print("Price is: " + str(price) + "kr")
-            print("Click pay again to confirm purchase")
+            priceShow= Label(root, text="Price is: " + str(price) + "kr")
+            priceShow.grid(row=7, columnspan=3)
             payConfirm = Label(root, text="Click 'Pay' again to confirm purchase")
             payConfirm.grid(row=8, columnspan=3)
+        elif doubleCheck != numberOfSeats:
+            payCount = 0
+            doubleCheck = numberOfSeats
+            price = c * 2 + doubleCheck * 5
+            payCount = 1
+            try:
+                payConfirm.grid_forget()
+            except NameError:
+                pass
+            try:
+                priceShow.grid_forget()
+            except NameError:
+                pass
+            try:
+                payConfirm2.grid_forget()
+            except NameError:
+                pass
+            print("Price is: " + str(price) + "kr")
+            priceShow = Label(root, text="Price is: " + str(price) + "kr")
+            priceShow.grid(row=7, columnspan=3)
+            payConfirm = Label(root, text="Click 'Pay' again to confirm purchase")
+            payConfirm.grid(row=8, columnspan=3)
+
         elif payCount == 1:
             payCount = 0
             payConfirm.grid_forget()
+            priceShow.grid_forget()
             payConfirm2 = Label(root, text="Payment confirmed!")
             payConfirm2.grid(row=8, columnspan=3)
             print("Payment confirmed!")
+            ticketPrint = open("ticket.txt", "w")
+            ticketPrint.write(a + " -> " + b)
+            ticketPrint.close()
+
 
     elif numberOfSeats == 0:
         errorText2 = Label(root, text="Please select seats")
@@ -215,6 +259,7 @@ def showTicket():
     global ticket
     global textHelp2
     global button_goBack2
+    global ticketDisplay2
 
     homeText.grid_forget()
     ptButton.grid_forget()
@@ -223,9 +268,15 @@ def showTicket():
     textHelp2.grid(row=4, columnspan=3)
     qrCode = ImageTk.PhotoImage(Image.open("qr.png"))
     frame2 = LabelFrame(root, padx=6, pady=6)
-    frame2.grid(row=5, columnspan=3, pady=10)
+    frame2.grid(row=6, columnspan=3, pady=10)
     ticket = Label(frame2, image=qrCode)
     ticket.grid(row=0, column=0)
+    try:
+        ticketDisplay = open("ticket.txt", "r")
+        ticketDisplay2 = Label(root, text=ticketDisplay.read())
+        ticketDisplay2.grid(row=5, columnspan=3)
+    except FileNotFoundError:
+        pass
 
     button_goBack2 = Button(root, text="Go back", command=goBack)
     button_goBack2.grid(row=10, column=0, sticky=SW)
@@ -250,6 +301,14 @@ def goBack():
 
     numberOfSeats = 0
     #All these try/excepts are here to ensure that labels and buttons get removed when going back
+    try:
+        priceShow.grid_forget()
+    except NameError:
+        pass
+    try:
+        ticketDisplay2.grid_forget()
+    except NameError:
+        pass
     try:
         payConfirm.grid_forget()
     except NameError:
@@ -333,6 +392,6 @@ ptButton.grid(row=2, column=0)
 
 stButton = Button(root, text="Show ticket", command=showTicket, padx=40, pady=100)
 stButton.grid(row=2, column=2)
-
+print("Hei")
 
 root.mainloop()
